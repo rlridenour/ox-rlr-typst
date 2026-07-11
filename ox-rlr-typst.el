@@ -103,7 +103,7 @@ and `:with-latex' is non-nil."
     (code . org-rlr-typst-verbatim)
     (comment . (lambda (&rest _) nil))
     (comment-block . (lambda (&rest _) nil))
-    (drawer . (lambda (&rest _) nil))
+    (drawer . org-rlr-typst-drawer)
     (entity . org-rlr-typst-entity)
     (example-block . org-rlr-typst-example-block)
     (export-block . org-rlr-typst-export-block)
@@ -125,7 +125,7 @@ and `:with-latex' is non-nil."
     (paragraph . org-rlr-typst-paragraph)
     (plain-list . org-rlr-typst-plain-list)
     (plain-text . org-rlr-typst-plain-text)
-    (property-drawer . (lambda (&rest _) nil))
+    (property-drawer . org-rlr-typst-property-drawer)
     (quote-block . org-rlr-typst-quote-block)
     (radio-target . org-rlr-typst-radio-target)
     (section . org-rlr-typst-section)
@@ -266,6 +266,19 @@ INFO is a plist used as a communication channel."
   contents)
 
 
+;;;; Drawer
+
+(defun org-rlr-typst-drawer (_drawer contents _info)
+  "Transcode a DRAWER element, passing its content through.
+Org's own export core already excludes LOGBOOK drawers by default (see
+`org-export-with-drawers'), so a drawer reaching this function is one
+the user chose to keep -- e.g. a folded-away container for `#+TYPST:'
+lines or a `#+begin_export typst' block, as in `rlr-org-standard-form.el'
+-style settings drawers. Dropping CONTENTS unconditionally here would
+silently discard that."
+  contents)
+
+
 ;;;; Horizontal Rule
 
 (defun org-rlr-typst-horizontal-rule (_horizontal-rule _contents _info)
@@ -360,7 +373,14 @@ DESC is the description part of the link, or nil."
         (format "#link(%S)[%s]" path (if (org-string-nw-p desc) desc path)))))))
 
 
-;;;; Node Property
+;;;; Property Drawer, Node Property
+
+(defun org-rlr-typst-property-drawer (_property-drawer contents _info)
+  "Transcode a PROPERTY-DRAWER element, passing its content through.
+Org's own export core already excludes property drawers by default
+\(see `org-export-with-properties'), so CONTENTS is empty unless the
+user explicitly opted in with `#+OPTIONS: prop:t' or similar."
+  (and (org-string-nw-p contents) contents))
 
 (defun org-rlr-typst-node-property (node-property _contents _info)
   "Transcode a NODE-PROPERTY element into Typst comment syntax."
@@ -531,6 +551,16 @@ functions can be invoked directly from Org."
   (org-element-map (plist-get info :parse-tree) '(latex-fragment latex-environment)
     (lambda (_) t) info t))
 
+(defun org-rlr-typst--has-manual-document-metadata-p (info)
+  "Non-nil when a `#+TYPST:'/`#+TYP:' line already calls `#set document(...)'.
+Used to skip the auto-generated `#set document(...)' metadata block
+when the user is clearly hand-writing their own Typst preamble."
+  (org-element-map (plist-get info :parse-tree) 'keyword
+    (lambda (kw)
+      (and (member (org-element-property :key kw) '("TYPST" "TYP"))
+           (string-match-p "#set[ \t]+document(" (or (org-element-property :value kw) ""))))
+    info t))
+
 (defun org-rlr-typst-inner-template (contents info)
   "Return body of document after converting it to Typst syntax.
 CONTENTS is the transcoded contents string.  INFO is a plist holding
@@ -552,7 +582,8 @@ a communication channel."
                        (org-string-nw-p (org-export-data (plist-get info :author) info))))
           (date (and (plist-get info :with-date)
                      (org-string-nw-p (org-export-data (org-export-get-date info) info)))))
-     (when (or title author date)
+     (when (and (or title author date)
+                (not (org-rlr-typst--has-manual-document-metadata-p info)))
        (concat "#set document("
                (mapconcat #'identity
                            (delq nil
