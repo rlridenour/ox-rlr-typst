@@ -477,12 +477,15 @@ STYLE is the raw text between `cite/' and `:' in `[cite/style: ...]'
 (nil for plain `[cite: ...]'), e.g. \"text\", \"author\", or \"na/b\"
 for a style with a variant. Only the style itself (before any `/'
 variant) affects the mapping; unrecognized or absent styles fall back
-to \"normal\"."
+to \"normal\". The special return value \"none\" denotes Typst's bare
+`none' literal (see `org-rlr-typst-citation-reference'), rather than
+a quoted string."
   (pcase (and style (car (split-string style "/")))
     ((or "author" "a") "author")
     ((or "noauthor" "na") "year")
     ((or "text" "t") "prose")
-    ("full" "full")
+    ((or "bibentry" "b") "full")
+    ((or "nocite" "n") "none")
     (_ "normal")))
 
 (defun org-rlr-typst-citation (citation contents info)
@@ -501,20 +504,23 @@ plain text."
 Any prefix/suffix text attached to this particular reference (e.g. the
 locator in `[cite:@key 27-29]') becomes the call's `supplement:'
 argument; the citation's style (from the parent `citation' object)
-becomes its `form:' argument, via `org-rlr-typst--cite-form'."
+becomes its `form:' argument, via `org-rlr-typst--cite-form'. That
+argument is emitted as the bare `none' literal for `[cite/nocite: ...]'
+citations, and as a quoted string otherwise."
   (let* ((key (org-element-property :key citation-reference))
          (style (org-element-property :style (org-export-get-parent citation-reference)))
          (prefix (org-element-property :prefix citation-reference))
          (suffix (org-element-property :suffix citation-reference))
+         (form (org-rlr-typst--cite-form style))
          (supplement (org-string-nw-p
                       (org-trim
                        (substring-no-properties
                         (concat (and prefix (org-export-data prefix info))
                                 (and suffix (org-export-data suffix info))))))))
-    (format "#cite(<%s>%s, form: %S)"
+    (format "#cite(<%s>%s, form: %s)"
             key
             (if supplement (format ", supplement: %S" supplement) "")
-            (org-rlr-typst--cite-form style))))
+            (if (equal form "none") "none" (format "%S" form)))))
 
 
 ;;;; Footnote Reference
