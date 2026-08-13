@@ -1,0 +1,73 @@
+#+TITLE: Table export
+#+AUTHOR: Test Author
+
+* Header plus body rule
+| Item  | Qty | Price |
+|-------+-----+-------|
+| Apple |   3 |  1.20 |
+| Pear  |   1 |  0.80 |
+|-------+-----+-------|
+| Total |   4 |  2.00 |
+
+* Fully ruled, top border first
+|-------+-----|
+| Item  | Qty |
+|-------+-----|
+| Apple |   3 |
+|-------+-----|
+
+* No rules at all
+| Apple | 3 |
+| Pear  | 1 |
+
+* Rule below the second row
+Org treats everything before the first rule as the header, the same way
+=ox-latex= and =ox-html= do, so both rows above the rule end up in
+=table.header=.
+
+| Apple | 3 |
+| Pear  | 1 |
+|-------+---|
+| Total | 4 |
+
+* Consecutive rules collapse
+| Item  | Qty |
+|-------+-----|
+|-------+-----|
+| Apple |   3 |
+
+* Caption and name become a figure
+#+CAPTION: Quarterly fruit sales
+#+NAME: tbl-fruit
+| Item  | Qty |
+|-------+-----|
+| Apple |   3 |
+| Pear  |   1 |
+
+See [[tbl-fruit]].
+
+* Caption with markup
+#+CAPTION: Sales for /Q1/, *revised*
+| Item  | Qty |
+|-------+-----|
+| Apple |   3 |
+
+* Name alone is still wrapped, so it can be referenced
+#+NAME: tbl-bare
+| Item  | Qty |
+|-------+-----|
+| Apple |   3 |
+
+Cross-reference: [[tbl-bare]].
+
+* ATTR_TYPST overrides the defaults
+#+ATTR_TYPST: :stroke 1pt :column-gutter 1em
+| Item  | Qty |
+|-------+-----|
+| Apple |   3 |
+
+* Alignment cookies
+| <r>   |  <c> | <l>  |
+| right | ctr  | left |
+|-------+------+------|
+| a     | b    | c    |

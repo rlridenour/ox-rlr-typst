@@ -10,6 +10,9 @@
 # Built distribution
 dist/
 
+# Leftovers from an interrupted test run
+test/fixtures/compile-check-*.typ
+
 # Backup files
 *~
 

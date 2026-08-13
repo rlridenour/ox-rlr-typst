@@ -92,6 +92,21 @@ when the source document contains LaTeX math — Typst fetches it
 automatically from the Typst Universe registry the first time you
 compile, no local package install required.
 
+## Tests
+
+`make test` runs golden-file tests: every Org file in `test/fixtures`
+is exported and compared against the `.typ` of the same name in
+`test/expected`. If the `typst` binary is on `PATH`, a second test
+compiles each expected file too, so the fixtures are checked for being
+valid Typst rather than merely unchanged; it's skipped otherwise.
+
+When a change is *meant* to alter the output, regenerate the expected
+files instead of hand-editing them, and read the diff:
+
+```sh
+make regenerate && git diff test/expected
+```
+
 ## Known limitations
 
 - `table.el`-style tables (drawn with `table.el`, not the native Org

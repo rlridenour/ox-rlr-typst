@@ -1,0 +1,23 @@
+#+TITLE: Image export
+#+AUTHOR: Test Author
+
+* Caption and name
+#+CAPTION: A small square
+#+NAME: fig-square
+[[file:img.png]]
+
+See [[fig-square]] and [[fig-bare][this one]].
+
+* Name only, no caption
+#+NAME: fig-bare
+[[file:img.png]]
+
+* Caption only, no name
+#+CAPTION: Unnamed but captioned
+[[file:img.png]]
+
+* Plain image, neither
+[[file:img.png]]
+
+* Inline image inside a sentence
+Text before [[file:img.png]] text after.
