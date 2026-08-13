@@ -48,3 +48,17 @@ being tested here.
 
 * Markup inside items
 - *bold*, /italic/, =code=, and a [[https://typst.app][link]]
+
+* Wrapped in a Typst function
+#+TYPST: #let standard-form(body) = block(inset: 1em, body)
+
+#+ATTR_TYPST: :wrap standard-form
+1. First premise
+2. Second premise
+3. Third premise
+4. Conclusion
+
+An unrecognized attribute is ignored rather than emitted.
+
+#+ATTR_TYPST: :nosuchthing 1em
+- plain after all

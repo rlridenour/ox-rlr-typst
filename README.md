@@ -37,6 +37,32 @@ Load the file and export as you would with any other Org back-end:
   for source blocks, using the Org `#+begin_src` language).
 - **Lists** (unordered, ordered, checkbox, description) map onto
   Typst's `-`, `+`, `[ ]`/`[X]`, and `/ term: ...` syntax respectively.
+- **List attributes**: a `#+ATTR_TYPST:` line above a list is looked up
+  in `org-rlr-typst-list-attributes`, an alist of attribute name →
+  handler function. The one built in is `:wrap NAME`, which encloses
+  the whole list in a call to a Typst function:
+
+  ```org
+  #+ATTR_TYPST: :wrap standard-form
+  1. First premise
+  2. Second premise
+  3. Conclusion
+  ```
+
+  ```typ
+  #standard-form[
+  + First premise
+  + Second premise
+  + Conclusion
+  ]
+  ```
+
+  To add another attribute, push an entry onto
+  `org-rlr-typst-list-attributes` whose handler takes the list's
+  rendered body and the attribute's value and returns the new body.
+  Handlers are applied left to right in the order the attributes are
+  written, each seeing the previous one's output, so several compose on
+  one list; names with no handler are ignored.
 - **Tables** become native `#table(...)` calls, with the leading row
   group wrapped in `table.header(...)` when the Org table has one, and
   per-column alignment carried over from Org's alignment cookies.

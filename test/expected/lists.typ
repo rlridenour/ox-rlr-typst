@@ -64,3 +64,19 @@ being tested here.
 = Markup inside items
 
 - *bold*, _italic_, `code`, and a #link("https://typst.app")[link]
+
+
+= Wrapped in a Typst function
+
+#let standard-form(body) = block(inset: 1em, body)
+
+#standard-form[
++ First premise
++ Second premise
++ Third premise
++ Conclusion
+]
+
+An unrecognized attribute is ignored rather than emitted.
+
+- plain after all
