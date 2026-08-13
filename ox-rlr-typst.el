@@ -546,17 +546,25 @@ locator in `[cite:@key 27-29]') becomes the call's `supplement:'
 argument; the citation's style (from the parent `citation' object)
 becomes its `form:' argument, via `org-rlr-typst--cite-form'. That
 argument is emitted as the bare `none' literal for `[cite/nocite: ...]'
-citations, and as a quoted string otherwise."
+citations, and as a quoted string otherwise.
+
+Typst has no separate pre-note, so a reference carrying both affixes
+\(`[cite:see @key for more]') folds them into the one supplement.  Each
+is trimmed before they are joined with a single space, since the affixes
+keep the whitespace that separated them from the key in the Org source
+and would otherwise run together as `see  for more'."
   (let* ((key (org-element-property :key citation-reference))
          (style (org-element-property :style (org-export-get-parent citation-reference)))
-         (prefix (org-element-property :prefix citation-reference))
-         (suffix (org-element-property :suffix citation-reference))
+         (affix (lambda (object)
+                  (and object
+                       (org-string-nw-p
+                        (org-trim (substring-no-properties
+                                   (org-export-data object info)))))))
+         (prefix (funcall affix (org-element-property :prefix citation-reference)))
+         (suffix (funcall affix (org-element-property :suffix citation-reference)))
          (form (org-rlr-typst--cite-form style))
          (supplement (org-string-nw-p
-                      (org-trim
-                       (substring-no-properties
-                        (concat (and prefix (org-export-data prefix info))
-                                (and suffix (org-export-data suffix info))))))))
+                      (mapconcat #'identity (delq nil (list prefix suffix)) " "))))
     (format "#cite(<%s>%s, form: %s)"
             key
             (if supplement (format ", supplement: %S" supplement) "")

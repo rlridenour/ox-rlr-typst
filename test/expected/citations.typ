@@ -23,7 +23,13 @@ A locator becomes a supplement #cite(<knuth1984>, supplement: "pp. 27-29", form:
 
 Several keys in one citation #cite(<knuth1984>, form: "normal")#cite(<lamport1994>, form: "normal").
 
-A citation carrying prefix and suffix text #cite(<knuth1984>, supplement: "see  for more", form: "normal").
+A citation carrying prefix and suffix text #cite(<knuth1984>, supplement: "see for more", form: "normal");
+Typst has no pre-note, so both fold into the supplement, joined by a
+single space rather than running together.
+
+Prefix text only #cite(<knuth1984>, supplement: "see", form: "normal").
+
+Suffix text only #cite(<knuth1984>, supplement: "for more", form: "normal").
 
 
 = Bibliography

@@ -20,7 +20,13 @@ A locator becomes a supplement [cite:@knuth1984 pp. 27-29].
 
 Several keys in one citation [cite:@knuth1984; @lamport1994].
 
-A citation carrying prefix and suffix text [cite:see @knuth1984 for more].
+A citation carrying prefix and suffix text [cite:see @knuth1984 for more];
+Typst has no pre-note, so both fold into the supplement, joined by a
+single space rather than running together.
+
+Prefix text only [cite:see @knuth1984].
+
+Suffix text only [cite:@knuth1984 for more].
 
 * Bibliography
 The exporter has no =#+PRINT_BIBLIOGRAPHY= handling yet — the keyword
