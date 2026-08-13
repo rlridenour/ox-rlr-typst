@@ -36,11 +36,14 @@
 ;;   - Tables become native `#table(...)' calls, with a leading row
 ;;     group wrapped in `table.header(...)' when the Org table has one,
 ;;     and per-column alignment carried over from Org's alignment
-;;     cookies.  A `#+ATTR_TYPST: :key value ...' line above the table
-;;     passes each pair straight through as a `#table(...)' argument
-;;     (e.g. `:stroke none' or `:column-gutter 1em'), overriding the
-;;     auto-computed `columns'/`align' when those keys are given
-;;     explicitly.
+;;     cookies.  Horizontal rules (`|---|') become `table.hline()' at
+;;     the same spot, and the table defaults to `stroke: none' so the
+;;     rendered lines match the ones drawn in the Org source instead of
+;;     Typst's default full grid.  A `#+ATTR_TYPST: :key value ...'
+;;     line above the table passes each pair straight through as a
+;;     `#table(...)' argument (e.g. `:stroke 1pt' or
+;;     `:column-gutter 1em'), overriding the auto-computed
+;;     `columns'/`align'/`stroke' when those keys are given explicitly.
 ;;   - Footnotes are inlined at their first reference as
 ;;     `#footnote[...] <fn-LABEL>'; later references to the same
 ;;     labelled footnote become `#footnote(<fn-LABEL>)'. Anonymous
@@ -573,13 +576,41 @@ functions can be invoked directly from Org."
           (when (org-export-get-next-element table-cell info) ", ")))
 
 (defun org-rlr-typst-table-row (table-row contents info)
-  "Transcode a TABLE-ROW element, tagging it as header or data for the table."
+  "Transcode a TABLE-ROW element, tagging it for the enclosing table.
+Rule rows (`|---|') are tagged `R' so `org-rlr-typst-table' can turn
+them into `table.hline()' calls; the remaining rows are tagged `H' or
+`D' depending on whether they belong to the header group."
   (if (eq (org-element-property :type table-row) 'rule)
-      ""
+      "R\x1\n"
     (let ((header-p (and (org-export-table-has-header-p
                           (org-export-get-parent-table table-row) info)
                          (eql (org-export-table-row-group table-row info) 1))))
       (concat (if header-p "H" "D") "\x1" contents "\n"))))
+
+(defun org-rlr-typst--table-split-rows (contents)
+  "Split CONTENTS, the transcoded table rows, into a (HEADER . BODY) cons.
+Both halves are lists of `#table(...)' arguments in source order: cell
+rows contribute their bracketed cell list, Org rule rows contribute
+`table.hline()'.  HEADER holds everything up to the last header row,
+plus the rule closing it, so that the line under the header repeats
+along with the header on a page break; BODY holds the rest.  Runs of
+consecutive rules collapse into one, since Typst would otherwise stack
+identical lines at the same position."
+  (let (rows)
+    (dolist (line (split-string contents "\n" t))
+      (let ((tag (aref line 0)))
+        (unless (and (eq tag ?R) (eq (car-safe (car rows)) ?R))
+          (push (cons tag (substring line 2)) rows))))
+    (setq rows (nreverse rows))
+    (let ((last-header (cl-position ?H rows :key #'car :from-end t))
+          (render (lambda (row) (if (eq (car row) ?R) "table.hline()" (cdr row)))))
+      (if (null last-header)
+          (cons nil (mapcar render rows))
+        (let ((split (if (eq (car-safe (nth (1+ last-header) rows)) ?R)
+                         (+ last-header 2)
+                       (1+ last-header))))
+          (cons (mapcar render (seq-take rows split))
+                (mapcar render (seq-drop rows split))))))))
 
 (defun org-rlr-typst--table-attrs (table)
   "Return TABLE's `#+ATTR_TYPST' attributes as an alist of (KEY . VALUE) strings.
@@ -602,29 +633,37 @@ literals like `none', `red', or `1em' work directly -- write
               (org-trim (org-export-format-code-default table info)))
     (let* ((attrs (org-rlr-typst--table-attrs table))
            (cols (cdr (org-export-table-dimensions table info)))
-           (first-row (org-element-map table 'table-row #'identity info t))
+           ;; The first *cell* row: a table opening with `|---|' has a rule
+           ;; row first, and rule rows carry no cells to take alignment from.
+           (first-row (org-element-map table 'table-row
+                        (lambda (row)
+                          (and (eq (org-element-property :type row) 'standard) row))
+                        info t))
            (aligns (and first-row
                         (org-element-map first-row 'table-cell
                           (lambda (cell)
                             (pcase (org-export-table-cell-alignment cell info)
                               ('right "right") ('center "center") (_ "left")))
                           info)))
-           (lines (split-string contents "\n" t))
-           (header-lines (seq-filter (lambda (l) (string-prefix-p "H\x1" l)) lines))
-           (data-lines (seq-filter (lambda (l) (string-prefix-p "D\x1" l)) lines))
-           (strip (lambda (l) (substring l 2))))
+           (rows (org-rlr-typst--table-split-rows contents))
+           (header (car rows))
+           (body (cdr rows))
+           (indent (lambda (pad) (lambda (row) (concat pad row ",\n")))))
       (concat
        "#table(\n"
        (unless (assoc "columns" attrs) (format "  columns: %d,\n" (max 1 cols)))
        (when (and aligns (not (assoc "align" attrs)))
          (format "  align: (%s),\n" (mapconcat #'identity aligns ", ")))
+       ;; Org draws rules explicitly, so suppress Typst's default full grid
+       ;; and let the `table.hline()' calls stand in for the `|---|' rows.
+       (unless (assoc "stroke" attrs) "  stroke: none,\n")
        (mapconcat (lambda (kv) (format "  %s: %s,\n" (car kv) (cdr kv))) attrs "")
-       (when header-lines
+       (when header
          (concat "  table.header(\n"
-                 (mapconcat (lambda (l) (concat "    " (funcall strip l) ",")) header-lines "\n")
-                 "\n  ),\n"))
-       (mapconcat (lambda (l) (concat "  " (funcall strip l) ",")) data-lines "\n")
-       "\n)\n\n"))))
+                 (mapconcat (funcall indent "    ") header "")
+                 "  ),\n"))
+       (mapconcat (funcall indent "  ") body "")
+       ")\n\n"))))
 
 
 ;;;; Template

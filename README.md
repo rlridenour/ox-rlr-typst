@@ -40,6 +40,13 @@ Load the file and export as you would with any other Org back-end:
 - **Tables** become native `#table(...)` calls, with the leading row
   group wrapped in `table.header(...)` when the Org table has one, and
   per-column alignment carried over from Org's alignment cookies.
+  Horizontal rules (`|---|`) become `table.hline()` in the same
+  position — the rule that closes the header goes inside
+  `table.header(...)`, so it repeats with the header across a page
+  break, and runs of consecutive rules collapse into one. Because Org
+  says where the lines go, tables default to `stroke: none` rather than
+  Typst's full grid; write `#+ATTR_TYPST: :stroke 1pt` (or any other
+  stroke) to get the grid back for a given table.
 - **Links**: external URLs become `#link("url")[desc]`; internal links
   to a heading (via `CUSTOM_ID`, `ID`, or fuzzy `[[title]]` links)
   become `@label` or `#link(<label>)[desc]`; image links become
