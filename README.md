@@ -47,10 +47,19 @@ Load the file and export as you would with any other Org back-end:
   says where the lines go, tables default to `stroke: none` rather than
   Typst's full grid; write `#+ATTR_TYPST: :stroke 1pt` (or any other
   stroke) to get the grid back for a given table.
+- **Table captions and names**: a `#+CAPTION:` or `#+NAME:` above a
+  table wraps it as `#figure(table(...), caption: [...]) <name>`, so
+  the table is numbered and `[[name]]` cross-references export as
+  `@name`. A `#+NAME:` alone still produces the figure wrapper, since
+  Typst refuses to reference a bare table ("cannot reference table
+  directly, try putting it into a figure"); tables with neither stay
+  plain `#table(...)` calls.
 - **Links**: external URLs become `#link("url")[desc]`; internal links
   to a heading (via `CUSTOM_ID`, `ID`, or fuzzy `[[title]]` links)
   become `@label` or `#link(<label>)[desc]`; image links become
-  `#image(...)` or, with a caption, `#figure(image(...), caption: [...])`.
+  `#image(...)`, or `#figure(image(...), caption: [...]) <name>` when
+  the image carries a `#+CAPTION:` or `#+NAME:` — the same figure
+  wrapping tables get, so `[[name]]` references resolve the same way.
 - **Footnotes** are inlined at their first reference as
   `#footnote[...] <fn-LABEL>`; later references to the same *named*
   footnote (`[fn:mylabel]`) reuse the label as `#footnote(<fn-LABEL>)`
