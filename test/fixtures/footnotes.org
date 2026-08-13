@@ -1,0 +1,35 @@
+#+TITLE: Footnote export
+#+AUTHOR: Test Author
+
+The definitions live under the "Footnotes" heading at the end, which
+Org treats as `org-footnote-section' and drops from the export, so it
+should not appear in the expected output.
+
+* Named, anonymous, and repeated
+A named footnote[fn:one], an anonymous one[fn::inline text, defined in
+place], and a second reference to the first[fn:one] — the repeat reuses
+the label instead of duplicating the definition.
+
+* A second named footnote
+Distinct labels get distinct definitions[fn:two].
+
+* Markup inside a definition
+Definitions are transcoded like any other content[fn:markup].
+
+* References from other constructs
+- a list item with a footnote[fn:inlist]
+- a plain item
+
+| a table cell[fn:intable] | second |
+
+* Footnotes
+
+[fn:one] The first definition.
+
+[fn:two] The second definition.
+
+[fn:markup] Contains *bold*, /italic/, and a [[https://typst.app][link]].
+
+[fn:inlist] Referenced from inside a list.
+
+[fn:intable] Referenced from inside a table.

@@ -1,0 +1,33 @@
+#+TITLE: Citation export
+#+AUTHOR: Test Author
+#+BIBLIOGRAPHY: refs.bib
+
+* Styles
+Plain [cite:@knuth1984] uses Typst's normal form.
+
+Prose [cite/t:@knuth1984] renders the author inline.
+
+Author only [cite/a:@knuth1984].
+
+Year only [cite/na:@knuth1984].
+
+Full entry [cite/b:@lamport1994].
+
+Uncited but listed [cite/n:@lamport1994].
+
+* Locators and affixes
+A locator becomes a supplement [cite:@knuth1984 pp. 27-29].
+
+Several keys in one citation [cite:@knuth1984; @lamport1994].
+
+A citation carrying prefix and suffix text [cite:see @knuth1984 for more].
+
+* Bibliography
+The exporter has no =#+PRINT_BIBLIOGRAPHY= handling yet — the keyword
+below exports to nothing — so the bibliography is emitted by hand with
+a =#+TYPST:= passthrough, which is also what makes =#cite= calls
+resolve when the output is compiled.
+
+#+PRINT_BIBLIOGRAPHY:
+
+#+TYPST: #bibliography("refs.bib")
