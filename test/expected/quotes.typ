@@ -1,0 +1,27 @@
+#set document(title: [Quote export], author: ("Test Author"))
+
+#outline()
+
+Quote characters are handed to Typst untouched even with the Org
+smart-quote option on, because Typst's own `smartquote` gets cases
+right that `org-export-activate-smart-quotes` does not.
+
+
+= Single, double, and nested
+
+A standalone 'quoted' word keeps an opening and a closing mark, which
+is the case Org gets wrong: it only recognises single quotation marks
+inside a double-quoted run, as in "a 'nested' one", and otherwise
+emits two apostrophes.
+
+
+= Apostrophes
+
+It's still an apostrophe when it sits inside a word, and the
+possessive in Typst's own documentation must not open a quotation.
+
+
+= Across markup
+
+A quotation that "spans _emphasis_ and #link("https://typst.app")[a link]" pairs up in Typst,
+where Org would see each plain-text fragment on its own.

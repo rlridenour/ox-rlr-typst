@@ -105,6 +105,16 @@ Load the file and export as you would with any other Org back-end:
   `#NAME[...]`, so you can invoke your own Typst functions directly
   from Org (e.g. `#+begin_note ... #+end_note` → `#note[...]`).
 - **`#+TOC: headlines`** becomes `#outline()`.
+- **Quotation marks** are left as the plain `'` and `"` you typed, so
+  Typst's own `smartquote` curls them. That is the case Org's
+  `#+OPTIONS: ':t` handles badly: it only recognises a single quote as
+  a quotation mark inside a double-quoted run, so a standalone
+  `'quoted'` word comes out as two closing apostrophes. Typst gets it
+  right, is aware of the document language, and — unlike Org, which
+  sees one plain-text fragment at a time — pairs up a quotation that
+  spans emphasis or a link. The Org option therefore has no effect
+  here; for literal straight quotes, add `#+TYPST: #set
+  smartquote(enabled: false)`.
 
 Anything not explicitly handled above falls back to the built-in
 `ascii` back-end's rendering (this exporter derives from it), which is
