@@ -131,5 +131,31 @@ Skipped when `typst' is not installed."
         (when (file-exists-p copy) (delete-file copy))
         (when (file-exists-p pdf) (delete-file pdf))))))
 
+;; The base name must not clash with a checked-in fixture, because the
+;; export writes its `.typ' and `.pdf' beside the Org source.
+(ert-deftest ox-rlr-typst-test-export-to-pdf ()
+  "`org-rlr-typst-export-to-pdf' produces a real PDF.
+Skipped when `typst' is not installed."
+  (skip-unless (executable-find "typst"))
+  (let* ((dir (make-temp-file "ox-rlr-typst-pdf" t))
+         (org (expand-file-name "doc.org" dir))
+         (default-directory dir)
+         (org-export-with-broken-links nil))
+    (unwind-protect
+        (with-temp-buffer
+          (insert "#+TITLE: T\n\n* Heading\nSome *text*.\n")
+          (write-region nil nil org)
+          (setq buffer-file-name org)
+          (org-mode)
+          (let ((pdf (org-rlr-typst-export-to-pdf)))
+            (should (equal (expand-file-name pdf)
+                           (expand-file-name "doc.pdf" dir)))
+            (should (file-exists-p pdf))
+            (with-temp-buffer
+              (insert-file-contents-literally pdf nil 0 5)
+              (should (equal (buffer-string) "%PDF-")))))
+      (set-buffer-modified-p nil)
+      (delete-directory dir t))))
+
 (provide 'ox-rlr-typst-tests)
 ;;; ox-rlr-typst-tests.el ends here

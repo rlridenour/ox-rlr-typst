@@ -16,8 +16,12 @@ Load the file and export as you would with any other Org back-end:
 - `M-x org-rlr-typst-export-to-typst` — export the current buffer to a
   sibling `.typ` file.
 - `M-x org-rlr-typst-export-as-typst` — export to a temporary buffer.
+- `M-x org-rlr-typst-export-to-pdf` — export, then compile the `.typ`
+  to a sibling `.pdf` with the `typst` binary. The command is set by
+  `org-rlr-typst-compile-command` (default `typst compile %f %o`).
 - From the export dispatcher (`C-c C-e`), it's listed under `y` ("Export
-  to Typst").
+  to Typst"): `y t` for the `.typ` file, `y p` for PDF, `y P` for PDF
+  and open it.
 - `org-rlr-typst-publish-to-typst` works as a `:publishing-function` in
   `org-publish-project-alist`.
 
